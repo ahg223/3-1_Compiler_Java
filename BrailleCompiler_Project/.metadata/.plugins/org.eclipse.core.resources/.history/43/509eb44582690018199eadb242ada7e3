@@ -1,0 +1,155 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */
+
+options
+{
+  static = true;
+  LOOKAHEAD = 2;
+}
+
+PARSER_BEGIN(ProjectGrammar)
+package Project;
+
+import java.util.HashMap;
+
+public class ProjectGrammar
+{
+   public static void main(String args []) throws ParseException
+   {
+      ProjectGrammar parser = new ProjectGrammar(System.in);
+
+      HashMap map = new HashMap();
+      
+      while (true)
+      {
+         try
+         {
+              ProjectGrammar.forMusicXML();
+         }
+         catch (Exception e)
+         {
+            System.out.println("NOK.");
+            System.out.println(e.getMessage());
+            ProjectGrammar.ReInit(System.in);
+         }
+         catch (Error e)
+         {
+            System.out.println("Oops.");
+            System.out.println(e.getMessage());
+
+            ProjectGrammar.ReInit(System.in);
+            // originally this should be removed
+            
+            break;
+         }
+      }
+   }
+}
+
+PARSER_END(ProjectGrammar)
+
+SKIP :
+{
+   " "
+|   "\r"
+|   "\t"
+|   "\n"
+}
+
+/*TOKEN :
+{
+     < _MEASURE : < PRINT >|< ATTRIBUTES >|< NOTE > >
+|    < _ATTRIBUTES : < DIVISIONS >|< KEY >|< TIME >|< STAVES >|< CLEF > >
+|    < _TIME : < BEATS >|< BEATTYPE > >
+|    < _CLEF : < SIGN >|< LINE > >
+|    < _NOTE : < PITCH >|< DURATION >|< TYPE > >
+|    < _PITCH : < STEP >|< OCTAVE > >
+}*/
+
+TOKEN :
+{
+   < PART : "part" >
+|    < MEASURE : "measure" >
+|    < PRINT : "print" >
+|    < ATTRIBUTES : "attributes" >
+|    < DIVISIONS : "divisions" >
+|    < KEY : "key" >
+|    < FIFTHS : "fifths" >
+|    < TIME : "time" >
+|    < BEATS : "beats" >
+|    < BEATTYPE : "beat-type" >
+|    < STAVES : "staves" >
+|    < CLEF : "clef" >
+|    < SIGN : "sign" >
+|    < LINE : "line" >
+|    < NOTE : "note" >
+|    < PITCH : "pitch" >
+|    < STEP : "step" >
+|    < OCTAVE : "octave" >
+|    < DURATION : "duration" >
+|    < TYPE : "type" >
+}
+
+/*TOKEN :
+{
+   < NUMBER : "number=\"[1-3]\"" >
+|    < NEWLINE : "new-system=\"yes\"" >
+}*/
+
+void parsePrint() :
+{
+}
+{
+   "<"< PRINT >">"
+   "</"< PRINT >">"
+     { }
+}
+
+void parseAttributes() :
+{
+}
+{
+   "<"< ATTRIBUTES >">"
+//   ( parseDivisions() | parseKey() | parseTime() | parseStaves() | parseClef() )+
+   "</"< ATTRIBUTES >">"
+     { }
+}
+
+void parseNote() :
+{
+}
+{
+     "<"< NOTE >">"
+//   ( parsePitch() | parseDuration() | parseType() )+
+   "</"< NOTE >">"
+     { }
+}
+
+void parseMeasure() :
+{}
+{
+   "<"< MEASURE >">"
+   ( parsePrint() | parseAttributes() | parseNote() )+
+   "</"< MEASURE >">"
+     { }
+}
+
+void forMusicXML() :
+{}
+{
+   "<"< PART >">"
+   (parseMeasure())+
+   "</"< PART >">"
+   {
+      System.out.println("damn!!");
+   }
+}
+/*
+void declare() :
+{
+   Token varName;
+}
+{
+   < OBJECT >varName=< STRING > { System.out.println(varName); }
+}*/

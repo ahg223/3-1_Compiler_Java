@@ -1,0 +1,248 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */
+
+options
+{
+  static = true;
+  LOOKAHEAD = 2;
+}
+
+PARSER_BEGIN(ProjectGrammar)
+package Project;
+
+import java.util.LinkedList;
+
+class note {
+     double default_x;
+     String step;
+     int octave;
+     int duration;
+     String type;
+}
+
+class measure {
+     LinkedList<note> Measure = new LinkedList<note>();
+}
+   
+public class ProjectGrammar
+{
+     
+   public static void main(String args []) throws ParseException
+   {
+      ProjectGrammar parser = new ProjectGrammar(System.in);
+
+      LinkedList<measure> part = new LinkedList<measure>();
+
+      boolean end = false;
+
+      while (!end)
+      {
+         try
+         {
+              end = ProjectGrammar.forMusicXML(part);
+         }         catch (Exception e)
+         {
+            System.out.println("NOK.");
+            System.out.println(e.getMessage());
+            ProjectGrammar.ReInit(System.in);
+         }
+         catch (Error e)
+         {
+            System.out.println("Oops.");
+            System.out.println(e.getMessage());
+
+            ProjectGrammar.ReInit(System.in);
+            // originally this should be removed
+            
+            break;
+         }
+      }
+
+      for(int i = 0; i < part.size(); i++) {
+           LinkedList<note> curMeasure = part.get(i).Measure;
+           System.out.println("measure " + (i + 1));
+           for(int j = 0; j < curMeasure.size(); j++) {
+                note curNote = curMeasure.get(j);
+                System.out.println("   note " + (j + 1));
+                System.out.println("      step: " + curNote.step);
+                System.out.println("      octave: " + curNote.octave);
+                System.out.println("      duration: " + curNote.duration);
+                System.out.println("      type: " + curNote.type);
+           }
+      }
+
+      System.out.println("\nend");
+   }
+}
+
+PARSER_END(ProjectGrammar)
+
+SKIP :
+{
+   " "
+|   "\r"
+|   "\t"
+|   "\n"
+}
+
+TOKEN :
+{
+   < PART : "part" >
+|    < MEASURE : "measure" >
+|    < PRINT : "print" >
+|    < ATTRIBUTES : "attributes" >
+|    < DIVISIONS : "divisions" >
+|    < KEY : "key" >
+|    < FIFTHS : "fifths" >
+|    < TIME : "time" >
+|    < BEATS : "beats" >
+|    < BEATTYPE : "beat-type" >
+|    < STAVES : "staves" >
+|    < CLEF : "clef" >
+|    < SIGN : "sign" >
+|    < LINE : "line" >
+|    < NOTE : "note" >
+|    < PITCH : "pitch" >
+|    < STEP : "step" >
+|    < OCTAVE : "octave" >
+|    < DURATION : "duration" >
+|    < TYPE : "type" >
+|    < TYPEVALUE : "whole"|"half"|"quarter"|"eighth" >
+|    < NUMBER : (["0"-"9"])+ >
+|    < ALPHABET : ["a"-"z", "A"-"Z"] >
+}
+
+/*
+     public class note {
+          double default_x;
+          String step;
+          int octave;
+          int duration;
+          String type;
+     }
+
+   public class measure {
+        LinkedList<note> Measure = new LinkedList<note>();
+   }
+
+     LinkedList<measure> part = new LinkedList<measure>();   
+*/
+
+void parsePrint() :
+{
+}
+{
+   "<"< PRINT >">"
+   "</"< PRINT >">"
+     { }
+}
+
+void parseAttributes() :
+{
+}
+{
+   "<"< ATTRIBUTES >">"
+//   ( parseDivisions() | parseKey() | parseTime() | parseStaves() | parseClef() )+
+   "</"< ATTRIBUTES >">"
+     { }
+}
+
+void parseStep(note lastNote) :
+{
+     Token alphabet;
+}
+{
+     "<"< STEP >">"
+   alphabet = < ALPHABET >
+   "</"< STEP >">"
+     { lastNote.step = alphabet.toString(); }
+}
+
+void parseOctave(note lastNote) :
+{
+     Token octave;
+}
+{
+     "<"< OCTAVE >">"
+   octave = < NUMBER >
+   "</"< OCTAVE >">"
+     { lastNote.octave = Integer.parseInt(octave.image); }
+}
+
+void parsePitch(note lastNote) :
+{
+}
+{
+     "<"< PITCH >">"
+   ( parseStep(lastNote) | parseOctave(lastNote) )+
+   "</"< PITCH >">"
+     { }
+}
+
+void parseDuration(note lastNote) :
+{
+     Token time;
+}
+{
+     "<"< DURATION >">"
+   time = < NUMBER >
+   "</"< DURATION >">"
+     { lastNote.duration = Integer.parseInt(time.image); }
+}
+
+void parseType(note lastNote) :
+{
+     Token str;
+}
+{
+     "<"< TYPE >">"
+   str = < TYPEVALUE >
+   "</"< TYPE >">"
+     { lastNote.type = str.toString(); }
+}
+
+void parseNote(measure lastMeasure) :
+{
+     note newNote = new note();
+     lastMeasure.Measure.add(newNote);
+     note lastNote = lastMeasure.Measure.getLast();
+}
+{
+     "<"< NOTE >">"
+   ( parsePitch(lastNote) | parseDuration(lastNote) | parseType(lastNote) )+
+   "</"< NOTE >">"
+     { }
+}
+
+void parseMeasure(LinkedList<measure> part) :
+{
+   measure newMeasure = new measure();
+   part.add(newMeasure);
+}
+{
+   "<"< MEASURE >">"
+   ( parsePrint() | parseAttributes() | parseNote(part.getLast()) )+
+   "</"< MEASURE >">"
+     { }
+}
+
+boolean forMusicXML(LinkedList<measure> part) :
+{
+}
+{
+   "<"< PART >">"
+   (parseMeasure(part))+
+   "</"< PART >">"
+   {
+        return true;
+   }
+}
+/*
+void declare() :
+{
+   Token varName;
+}
+{
+   < OBJECT >varName=< STRING > { System.out.println(varName); }
+}*/

@@ -1,0 +1,5 @@
+package Braille;
+
+public class Braille_character {
+
+}
